@@ -174,7 +174,8 @@ export const PartnerCalendar: React.FC<PartnerCalendarProps> = ({
               className={
                 "w-9 h-9 flex items-center justify-center text-center rounded-lg border transition-colors " +
                 (entry
-                  ? COLOR_MAP[entry.color] + " text-white font-bold cursor-pointer hover:opacity-80"
+                  ? COLOR_MAP[entry.color] +
+                    " text-white font-bold cursor-pointer hover:opacity-80"
                   : "bg-white text-black border-black cursor-default")
               }
               onClick={() => entry && openModal(day)}
@@ -219,7 +220,9 @@ export const PartnerCalendar: React.FC<PartnerCalendarProps> = ({
               <div className="text-sm text-gray-600 mb-2">Цвет:</div>
               <div className="flex justify-start">
                 <div
-                  className={`w-9 h-9 rounded-lg border-2 ${COLOR_MAP[entry.color]} border-black`}
+                  className={`w-9 h-9 rounded-lg border-2 ${
+                    COLOR_MAP[entry.color]
+                  } border-black`}
                   aria-label={entry.color}
                 />
               </div>
@@ -251,4 +254,3 @@ export const PartnerCalendar: React.FC<PartnerCalendarProps> = ({
     </div>
   );
 };
-

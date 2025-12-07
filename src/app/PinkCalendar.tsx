@@ -44,6 +44,9 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
   const [currentMonth, setCurrentMonth] = useState(initialMonth);
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [checkbox1, setCheckbox1] = useState(false);
+  const [checkbox2, setCheckbox2] = useState(false);
   const [entry, setEntry] = useState<CalendarEntry | null>(null);
   const [color, setColor] = useState<Color>("RED");
   const [note, setNote] = useState("");
@@ -93,8 +96,15 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
     setNote(entry?.note || "");
     setModalOpen(true);
   };
-  const saveEntry = async () => {
+  const handleSaveClick = () => {
+    // Открываем модальное окно подтверждения
+    setConfirmModalOpen(true);
+  };
+
+  const confirmSave = async () => {
+    if (!checkbox1 || !checkbox2) return;
     if (!userId || selectedDay == null) return;
+
     const date = new Date(currentYear, currentMonth, selectedDay);
     await fetch("/api/calendar", {
       method: "POST",
@@ -118,6 +128,9 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
         }
       });
     setModalOpen(false);
+    setConfirmModalOpen(false);
+    setCheckbox1(false);
+    setCheckbox2(false);
   };
 
   const handleNextMonth = () => {
@@ -236,7 +249,7 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
       </div>
       {modalOpen && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
-          <div className="bg-[#fff] rounded-xl p-5 w-full max-w-xs border border-[#3C1820] shadow-lg relative">
+          <div className="bg-white rounded-xl p-5 w-full max-w-xs border border-[#3C1820] shadow-lg relative">
             {/* Крестик */}
             <button
               className="absolute top-3 right-3 text-2xl text-[#5a5a5a] hover:text-black focus:outline-none"
@@ -310,10 +323,78 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
                 Отмена
               </button>
               <button
-                onClick={saveEntry}
+                onClick={handleSaveClick}
                 className="flex-1 py-2 rounded-lg bg-pink-500 text-white font-extrabold hover:bg-pink-600 transition-colors"
               >
                 Сохранить
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {confirmModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-5 w-full max-w-xs border border-[#3C1820] shadow-lg relative">
+            {/* Крестик */}
+            <button
+              className="absolute top-3 right-3 text-2xl text-[#5a5a5a] hover:text-black focus:outline-none"
+              onClick={() => {
+                setConfirmModalOpen(false);
+                setCheckbox1(false);
+                setCheckbox2(false);
+              }}
+              aria-label="Закрыть"
+            >
+              ×
+            </button>
+            <h2 className="mb-4 text-lg font-extrabold text-center text-black">
+              {userId === "2" ? "Ничего не забыла?)" : "Ничего не забыл?)"}
+            </h2>
+            <div className="space-y-3 mb-4">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checkbox1}
+                  onChange={(e) => setCheckbox1(e.target.checked)}
+                  className="w-5 h-5 rounded border-2 border-gray-300 text-pink-500 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 cursor-pointer"
+                />
+                <span className="text-sm text-gray-700">
+                  Я уверяю что все сказанное является правдой🙂
+                </span>
+              </label>
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={checkbox2}
+                  onChange={(e) => setCheckbox2(e.target.checked)}
+                  className="w-5 h-5 rounded border-2 border-gray-300 text-pink-500 focus:ring-2 focus:ring-pink-500 focus:ring-offset-2 cursor-pointer"
+                />
+                <span className="text-sm text-gray-700">
+                  И что я ничего не скрываю🙃
+                </span>
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setConfirmModalOpen(false);
+                  setCheckbox1(false);
+                  setCheckbox2(false);
+                }}
+                className="flex-1 py-2 rounded-lg bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors"
+              >
+                Ладно, ладно
+              </button>
+              <button
+                onClick={confirmSave}
+                disabled={!checkbox1 || !checkbox2}
+                className={`flex-1 py-2 rounded-lg font-extrabold transition-colors ${
+                  checkbox1 && checkbox2
+                    ? "bg-pink-500 text-white hover:bg-pink-600"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                Подтвердить
               </button>
             </div>
           </div>

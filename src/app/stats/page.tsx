@@ -11,23 +11,24 @@ interface UserStats {
   total: number;
 }
 
-const COLOR_MAP: Record<string, { bg: string; border: string; label: string }> = {
-  RED: {
-    bg: "bg-[#e33636]",
-    border: "border-[#e33636]",
-    label: "Красные дни",
-  },
-  YELLOW: {
-    bg: "bg-[#e1a919]",
-    border: "border-[#e1a919]",
-    label: "Желтые дни",
-  },
-  GREEN: {
-    bg: "bg-[#1e6340]",
-    border: "border-[#1e6340]",
-    label: "Зеленые дни",
-  },
-};
+const COLOR_MAP: Record<string, { bg: string; border: string; label: string }> =
+  {
+    RED: {
+      bg: "bg-[#e33636]",
+      border: "border-[#e33636]",
+      label: "Красные дни",
+    },
+    YELLOW: {
+      bg: "bg-[#e1a919]",
+      border: "border-[#e1a919]",
+      label: "Желтые дни",
+    },
+    GREEN: {
+      bg: "bg-[#1e6340]",
+      border: "border-[#1e6340]",
+      label: "Зеленые дни",
+    },
+  };
 
 export default function StatsPage() {
   const [stats, setStats] = useState<UserStats[]>([]);
@@ -78,12 +79,7 @@ export default function StatsPage() {
     title: string,
     statData: { RED: number; YELLOW: number; GREEN: number; total: number }
   ) => {
-    const maxValue = Math.max(
-      statData.RED,
-      statData.YELLOW,
-      statData.GREEN,
-      1
-    );
+    const maxValue = Math.max(statData.RED, statData.YELLOW, statData.GREEN, 1);
 
     return (
       <div className="w-full max-w-md mx-auto p-6 rounded-2xl shadow-lg bg-white border border-[#3C1820]">
@@ -156,9 +152,7 @@ export default function StatsPage() {
                   <div
                     className={`w-8 h-8 rounded-lg mx-auto ${COLOR_MAP[color].bg} ${COLOR_MAP[color].border} border-2`}
                   />
-                  <div className="text-xs font-bold text-gray-800">
-                    {count}
-                  </div>
+                  <div className="text-xs font-bold text-gray-800">{count}</div>
                   <div className="text-xs text-gray-500">{percentage}%</div>
                 </div>
               );
@@ -178,12 +172,13 @@ export default function StatsPage() {
         <div className="space-y-6">
           {/* Общая статистика */}
           {stats.length > 1 && renderStatsCard("Общая статистика", totalStats)}
-          
+
           {/* Статистика по пользователям */}
-          {stats.map((userStat) => renderStatsCard(userStat.userName, userStat))}
+          {stats.map((userStat) =>
+            renderStatsCard(userStat.userName, userStat)
+          )}
         </div>
       </main>
     </div>
   );
 }
-
