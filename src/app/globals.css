@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Улучшенная видимость курсора в textarea на мобильных устройствах */
+textarea {
+  caret-color: #000000 !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Для iOS Safari - более толстый курсор */
+@supports (-webkit-touch-callout: none) {
+  textarea {
+    caret-color: #000000 !important;
+    caret-width: 2px;
+  }
+}

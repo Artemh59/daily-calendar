@@ -297,7 +297,12 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
                   const target = e.target as HTMLTextAreaElement;
                   setCursorPosition(target.selectionStart);
                 }}
-                style={{ minHeight: "120px", maxHeight: "200px" }}
+                style={{
+                  minHeight: "120px",
+                  maxHeight: "200px",
+                  caretColor: "#000000",
+                  WebkitTapHighlightColor: "transparent",
+                }}
               />
             </div>
             <div className="flex gap-2">
