@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id String @id @default(uuid())
+  name String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  calendar  CalendarEntry[]
+}
+
+enum Color {
+  RED
+  YELLOW
+  GREEN
+}
+
+model CalendarEntry {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  color     Color
+  note      String?
+  createdAt DateTime @default(now())
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}
