@@ -48,7 +48,7 @@ export default function MobileNav() {
   const router = useRouter();
   const pathname = usePathname();
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 flex justify-around items-end h-16 shadow-md md:hidden">
+    <nav className="fixed bottom-0 inset-x-0 z-50 bg-white border-t border-gray-200 flex justify-around items-end h-20 pb-6 shadow-md md:hidden">
       <button
         className={
           `flex flex-col items-center flex-1 h-full justify-center font-semibold text-xs transition text-gray-500 hover:text-pink-500` +

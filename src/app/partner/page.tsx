@@ -73,7 +73,7 @@ export default function PartnerPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-white font-sans">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center py-32 px-4 bg-white sm:items-center">
+      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-center pt-16 pb-24 px-4 bg-white sm:items-center">
         <div className="w-full max-w-md mx-auto mb-4 text-center">
           <span className="px-3 py-1 bg-pink-100 rounded-lg border border-pink-200 text-pink-800 text-sm font-semibold">
             Календарь партнера: {partner.name}

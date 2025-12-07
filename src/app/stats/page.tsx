@@ -164,7 +164,7 @@ export default function StatsPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white font-sans py-32 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-white font-sans pt-16 pb-24 px-4">
       <main className="w-full max-w-3xl">
         <h1 className="text-3xl font-bold text-center mb-8 text-gray-800">
           Статистика
