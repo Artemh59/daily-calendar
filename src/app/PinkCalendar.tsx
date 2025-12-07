@@ -50,6 +50,7 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
   const [entry, setEntry] = useState<CalendarEntry | null>(null);
   const [color, setColor] = useState<Color>("RED");
   const [note, setNote] = useState("");
+  const [cursorPosition, setCursorPosition] = useState(0);
   const [calendarMap, setCalendarMap] = useState<Record<number, CalendarEntry>>(
     {}
   );
@@ -93,7 +94,9 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
     const entry = calendarMap[day];
     setEntry(entry || null);
     setColor((entry?.color as Color) || "RED");
-    setNote(entry?.note || "");
+    const noteText = entry?.note || "";
+    setNote(noteText);
+    setCursorPosition(noteText.length);
     setModalOpen(true);
   };
   const handleSaveClick = () => {
@@ -275,14 +278,28 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
                 />
               ))}
             </div>
-            <textarea
-              className="w-full border border-black rounded-lg p-2 text-sm mb-3 text-black placeholder-black bg-white focus:border-black"
-              rows={2}
-              placeholder="Описание..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={120}
-            />
+            <div className="mb-3">
+              <textarea
+                className="w-full border border-black rounded-lg p-3 text-sm text-black placeholder-gray-400 bg-white focus:border-black focus:outline-none resize-none overflow-y-auto"
+                rows={6}
+                placeholder="Описание..."
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                onSelect={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  setCursorPosition(target.selectionStart);
+                }}
+                onKeyUp={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  setCursorPosition(target.selectionStart);
+                }}
+                onClick={(e) => {
+                  const target = e.target as HTMLTextAreaElement;
+                  setCursorPosition(target.selectionStart);
+                }}
+                style={{ minHeight: "120px", maxHeight: "200px" }}
+              />
+            </div>
             <div className="flex gap-2">
               {entry && (
                 <button
