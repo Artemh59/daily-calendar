@@ -13,10 +13,20 @@ export async function GET(req: NextRequest) {
     );
   }
   try {
-    const entry = await prisma.calendarEntry.findFirst({
-      where: { userId, date: new Date(date) },
+    const startDate = new Date(date);
+    const endDate = new Date(startDate);
+    endDate.setMonth(startDate.getMonth() + 1);
+    endDate.setDate(0);
+    const entries = await prisma.calendarEntry.findMany({
+      where: {
+        userId,
+        date: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
     });
-    return NextResponse.json(entry);
+    return NextResponse.json(entries);
   } catch {
     return NextResponse.json({ error: "Ошибка поиска entry" }, { status: 500 });
   }
@@ -39,5 +49,22 @@ export async function POST(req: NextRequest) {
       { error: "Ошибка сохранения entry" },
       { status: 500 }
     );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const { userId, date } = await req.json();
+  if (!userId || !date) {
+    return NextResponse.json({ error: "Missing data" }, { status: 400 });
+  }
+  try {
+    await prisma.calendarEntry.delete({
+      where: {
+        userId_date: { userId, date: new Date(date) },
+      },
+    });
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ error: "Ошибка удаления" }, { status: 500 });
   }
 }

@@ -30,12 +30,17 @@ function getFirstDayIndex(year: number, month: number) {
   return d === 0 ? 6 : d - 1;
 }
 
-interface PinkCalendarProps {
+interface PartnerCalendarProps {
+  partnerId: string;
   year?: number;
   month?: number;
 }
 
-export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
+export const PartnerCalendar: React.FC<PartnerCalendarProps> = ({
+  partnerId,
+  year,
+  month,
+}) => {
   const today = new Date();
   const initialYear = year ?? today.getFullYear();
   const initialMonth = month ?? today.getMonth();
@@ -45,12 +50,9 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [entry, setEntry] = useState<CalendarEntry | null>(null);
-  const [color, setColor] = useState<Color>("RED");
-  const [note, setNote] = useState("");
   const [calendarMap, setCalendarMap] = useState<Record<number, CalendarEntry>>(
     {}
   );
-  const [userId, setUserId] = useState<string | null>(null);
 
   const days = getDaysInMonth(currentYear, currentMonth);
   const firstDayIdx = getFirstDayIndex(currentYear, currentMonth);
@@ -58,15 +60,9 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
     currentYear === today.getFullYear() && currentMonth === today.getMonth();
 
   useEffect(() => {
-    const storedId =
-      typeof window !== "undefined" ? localStorage.getItem("userId") : null;
-    setUserId(storedId);
-  }, []);
-
-  useEffect(() => {
-    if (userId) {
+    if (partnerId) {
       fetch(
-        `/api/calendar?userId=${userId}&date=${currentYear}-${String(
+        `/api/calendar?userId=${partnerId}&date=${currentYear}-${String(
           currentMonth + 1
         ).padStart(2, "0")}-01`
       )
@@ -82,42 +78,15 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
           }
         });
     }
-  }, [currentYear, currentMonth, userId]);
+  }, [currentYear, currentMonth, partnerId]);
 
   const openModal = (day: number) => {
-    if (!userId) return;
-    setSelectedDay(day);
     const entry = calendarMap[day];
-    setEntry(entry || null);
-    setColor((entry?.color as Color) || "RED");
-    setNote(entry?.note || "");
-    setModalOpen(true);
-  };
-  const saveEntry = async () => {
-    if (!userId || selectedDay == null) return;
-    const date = new Date(currentYear, currentMonth, selectedDay);
-    await fetch("/api/calendar", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, date, color, note }),
-    });
-    fetch(
-      `/api/calendar?userId=${userId}&date=${currentYear}-${String(
-        currentMonth + 1
-      ).padStart(2, "0")}-01`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          const byDay: Record<number, CalendarEntry> = {};
-          data.forEach((entry: CalendarEntry) => {
-            const d = new Date(entry.date).getDate();
-            byDay[d] = entry;
-          });
-          setCalendarMap(byDay);
-        }
-      });
-    setModalOpen(false);
+    if (entry) {
+      setSelectedDay(day);
+      setEntry(entry);
+      setModalOpen(true);
+    }
   };
 
   const handleNextMonth = () => {
@@ -181,11 +150,9 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
         {Array(firstDayIdx)
           .fill(0)
           .map((_, i) => {
-            // сколько надо дней с конца предыдущего месяца
             const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
             const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
             const prevDays = getDaysInMonth(prevYear, prevMonth);
-            // Реальный номер конечного дня прошлого месяца (например, 28, 29, 30, 31)
             const date = prevDays[prevDays.length - firstDayIdx + i];
             return (
               <div
@@ -205,12 +172,12 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
             <div
               key={day}
               className={
-                "w-9 h-9 flex items-center justify-center text-center rounded-lg border transition-colors cursor-pointer " +
+                "w-9 h-9 flex items-center justify-center text-center rounded-lg border transition-colors " +
                 (entry
-                  ? COLOR_MAP[entry.color] + " text-white font-bold"
-                  : "bg-white text-black border-black hover:bg-gray-100")
+                  ? COLOR_MAP[entry.color] + " text-white font-bold cursor-pointer hover:opacity-80"
+                  : "bg-white text-black border-black cursor-default")
               }
-              onClick={() => userId && openModal(day)}
+              onClick={() => entry && openModal(day)}
               title={entry?.note || undefined}
             >
               {day}
@@ -234,7 +201,7 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
             ));
         })()}
       </div>
-      {modalOpen && (
+      {modalOpen && entry && (
         <div className="fixed inset-0 z-50 bg-black bg-opacity-80 flex items-center justify-center">
           <div className="bg-[#fff] rounded-xl p-5 w-full max-w-xs border border-[#3C1820] shadow-lg relative">
             {/* Крестик */}
@@ -246,74 +213,36 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
               ×
             </button>
             <h2 className="mb-3 text-lg font-extrabold text-center text-black">
-              Настроить дату
+              Просмотр записи
             </h2>
-            <div className="flex justify-between mb-2">
-              {(Object.keys(COLOR_MAP) as Color[]).map((col) => (
-                <button
-                  key={col}
-                  onClick={() => setColor(col)}
-                  className={`w-9 h-9 rounded-lg border-2 ${COLOR_MAP[col]} ${
-                    color === col
-                      ? "ring-2 ring-black border-black"
-                      : "opacity-60 border-black"
-                  }`}
-                  aria-label={col}
+            <div className="mb-3">
+              <div className="text-sm text-gray-600 mb-2">Цвет:</div>
+              <div className="flex justify-start">
+                <div
+                  className={`w-9 h-9 rounded-lg border-2 ${COLOR_MAP[entry.color]} border-black`}
+                  aria-label={entry.color}
                 />
-              ))}
+              </div>
             </div>
-            <textarea
-              className="w-full border border-black rounded-lg p-2 text-sm mb-3 text-black placeholder-black bg-white focus:border-black"
-              rows={2}
-              placeholder="Описание..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              maxLength={120}
-            />
+            {entry.note && (
+              <div className="mb-3">
+                <div className="text-sm text-gray-600 mb-2">Описание:</div>
+                <div className="w-full border border-gray-300 rounded-lg p-2 text-sm text-black bg-gray-50 min-h-[60px]">
+                  {entry.note}
+                </div>
+              </div>
+            )}
+            {!entry.note && (
+              <div className="mb-3 text-sm text-gray-400 italic">
+                Нет описания
+              </div>
+            )}
             <div className="flex gap-2">
-              {entry && (
-                <button
-                  onClick={async () => {
-                    await fetch("/api/calendar", {
-                      method: "DELETE",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ userId, date: entry.date }),
-                    });
-                    // После удаления обновить данные
-                    fetch(
-                      `/api/calendar?userId=${userId}&date=${currentYear}-${String(
-                        currentMonth + 1
-                      ).padStart(2, "0")}-01`
-                    )
-                      .then((res) => res.json())
-                      .then((data) => {
-                        if (Array.isArray(data)) {
-                          const byDay: Record<number, CalendarEntry> = {};
-                          data.forEach((entry: CalendarEntry) => {
-                            const d = new Date(entry.date).getDate();
-                            byDay[d] = entry;
-                          });
-                          setCalendarMap(byDay);
-                        }
-                      });
-                    setModalOpen(false);
-                  }}
-                  className="flex-1 py-2 rounded-lg bg-white border border-red-400 text-red-600 font-bold hover:bg-red-50 transition-colors"
-                >
-                  Удалить
-                </button>
-              )}
               <button
                 onClick={() => setModalOpen(false)}
-                className="flex-1 py-2 rounded-lg bg-gray-500 text-black font-bold hover:bg-gray-600 transition-colors"
+                className="flex-1 py-2 rounded-lg bg-gray-500 text-white font-bold hover:bg-gray-600 transition-colors"
               >
-                Отмена
-              </button>
-              <button
-                onClick={saveEntry}
-                className="flex-1 py-2 rounded-lg bg-pink-500 text-white font-extrabold hover:bg-pink-600 transition-colors"
-              >
-                Сохранить
+                Закрыть
               </button>
             </div>
           </div>
@@ -322,3 +251,4 @@ export const PinkCalendar: React.FC<PinkCalendarProps> = ({ year, month }) => {
     </div>
   );
 };
+
