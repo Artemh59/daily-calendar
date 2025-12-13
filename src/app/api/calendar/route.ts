@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import {
+  sendTelegramMessage,
+  formatCalendarEntryMessage,
+} from "@/lib/telegram";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url!);
@@ -38,11 +42,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Missing data" }, { status: 400 });
   }
   try {
-    const entry = await prisma.calendarEntry.upsert({
-      where: { userId_date: { userId, date: new Date(date) } },
-      update: { color, note },
-      create: { userId, date: new Date(date), color, note },
+    const entryDate = new Date(date);
+    const existingEntry = await prisma.calendarEntry.findUnique({
+      where: { userId_date: { userId, date: entryDate } },
     });
+
+    const isUpdate = !!existingEntry;
+
+    const entry = await prisma.calendarEntry.upsert({
+      where: { userId_date: { userId, date: entryDate } },
+      update: { color, note },
+      create: { userId, date: entryDate, color, note },
+    });
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true },
+    });
+
+    if (user) {
+      const message = formatCalendarEntryMessage(
+        user.name,
+        entryDate,
+        color,
+        note || null,
+        isUpdate
+      );
+      sendTelegramMessage(message, userId).catch((error) => {
+        console.error("Failed to send Telegram message:", error);
+      });
+    }
+
     return NextResponse.json(entry);
   } catch {
     return NextResponse.json(
